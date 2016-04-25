@@ -1,12 +1,67 @@
+/* global Phaser */
+
 /** Namespace object. */
 var mamagotchi = {
   init: {},
-  characterActions: {},
+  characterEvents: {},
   consts: {},
   events: {},
   game: null,
-  objects: {}
+  objects: {},
+  utils: {}
 };
+
+/**
+ * The character's stats with inner peace and fun properties.
+ * @param {?number} innerPeace Character's "inner peace" stats.
+ * @param {?number} fun Character's "fun" stats.
+ * @constructor
+ */
+mamagotchi.utils.CharacterStats = function(innerPeace, fun) {
+  this.innerPeace = innerPeace;
+  this.fun = fun;
+};
+
+/**
+ * Changes this stats by adding the given stats values.
+ * @param {!mamagotchi.utils.CharacterStats} otherStats Stats to change this
+ *    stats.
+ */
+mamagotchi.utils.CharacterStats.prototype.modifyWith = function(otherStats) {
+  var newStat;
+  for (var stat in otherStats) {
+    if (this.hasOwnProperty(stat)) {
+      newStat = this[stat] + otherStats[stat];
+      if (newStat > 100) {
+        this[stat] = 100;
+      } else if (newStat < 0) {
+        this[stat] = 0;
+      } else {
+        this[stat] = newStat;
+      }
+    }
+  }
+};
+
+/** Incrementally depletes the stats. */
+mamagotchi.utils.CharacterStats.prototype.deplete = function() {
+  this.innerPeace -= this.innerPeace > 0 ? 0.001 : 0;
+  this.fun -= this.fun > 0 ? 0.001 : 0;
+};
+
+/**
+ * The character event object containing details of the event.
+ * @typedef {Object} mamagotchi.CharacterEvent
+ * @property {!string} description Event/action description.
+ * @property {?mamagotchi.utils.CharacterStats} stats Impact on character's stats.
+ * @property {?mamagotchi.CharacterEventCallback} callback Function to call
+ *    on character event.
+ */
+
+ /**
+  * Callback used by mamagotchi.CharacterEvent.
+  * @callback mamagotchi.CharacterEventCallback
+  */
 
 // Constants.
 mamagotchi.consts.IMG_PATH = 'assets/images/';
@@ -38,7 +93,7 @@ mamagotchi.init.preload = function() {
   game.load.image(consts.MAMA, consts.IMG_PATH + consts.MAMA + consts.PNG);
   game.load.image(consts.ARSENAL_BUTTON,
       consts.IMG_PATH + consts.ARSENAL_BUTTON + consts.PNG);
-  
+
   game.load.image(consts.ARSENAL_COFFEE,
       consts.IMG_PATH + consts.ARSENAL_COFFEE + consts.PNG);
   game.load.image(consts.ARSENAL_CULTURE,
@@ -69,24 +124,24 @@ mamagotchi.init.create = function() {
   objects.mama.input.allowVerticalDrag = false;
 
   // Mama custom attributes.
-  objects.mama.customParams = {innerPeace: 100, fun: 100};
+  objects.mama.customParams = new mamagotchi.utils.CharacterStats(100, 100);
 
-  // Action arsenal button.
+  // Event arsenal button.
   objects.arsenalButton = game.add.sprite(
       game.world._width - 150, 70, mamagotchi.consts.ARSENAL_BUTTON);
   objects.arsenalButton.anchor.setTo(0.5);
   objects.arsenalButton.inputEnabled = true;
 
-  // Action arsenal modal should be the last object created so that
+  // Event arsenal modal should be the last object created so that
   // it stays on top/the front.
   objects.arsenalModal = mamagotchi.init.createArsenalModal();
-  objects.arsenalButton.events.onInputDown.add(function(sprite, event) {
+  objects.arsenalButton.events.onInputDown.add(function() {
     objects.arsenalModal.visible = true;
   }, this);
 };
 
 /**
- * Helper function for Phaser create function that creates the action arsenal
+ * Helper function for Phaser create function that creates the event arsenal
  * modal.
  * @return {Phaser.Group} The modal that is created.
  */
@@ -106,7 +161,7 @@ mamagotchi.init.createArsenalModal = function() {
   innerModal.width = game.width;
   innerModal.height = game.height;
   innerModal.input.priorityID = 0;
-  innerModal.events.onInputDown.add(function(element, pointer) {
+  innerModal.events.onInputDown.add(function() {
     modal.visible = false;
   }, this, 2);
   modal.add(innerModal);
@@ -132,22 +187,21 @@ mamagotchi.init.createArsenalModal = function() {
             .anchor.setTo(0.5);
   modal.add(modalTitle);
 
-  var actionOptions = mamagotchi.characterActions.ARSENAL;
+  var eventOptions = mamagotchi.characterEvents.ARSENAL;
   var sidePadding = 50;
   var optionWidth = 200;
   // 1 padding on either side, length-1 spaces in betweens
   var spacing = (game.world._width -
-      (sidePadding * 2 + optionWidth * actionOptions.length))/
-      (actionOptions.length - 1);
-  var offset = sidePadding + optionWidth/2;
-  actionOptions.forEach(function(action) {
-    var option = game.add.image(offset, game.world.centerY + 75, action.key);
+      (sidePadding * 2 + optionWidth * eventOptions.length)) /
+      (eventOptions.length - 1);
+  var offset = sidePadding + optionWidth / 2;
+  eventOptions.forEach(function(event) {
+    var option = game.add.image(offset, game.world.centerY + 75, event.key);
     option.inputEnabled = true;
     option.pixelPerfectClick = true;
     option.priorityID = 10;
     option.events.onInputDown.add(
-        mamagotchi.events.fireArsenalAction, option, 1,
-        action.description, action.innerPeace, action.fun);
+        mamagotchi.events.executeArsenalEvent, option, 1, event.event);
     option.bringToTop()
           .anchor.setTo(0.5);
     modal.add(option);
@@ -160,11 +214,7 @@ mamagotchi.init.createArsenalModal = function() {
 
 /** Phaser update function. */
 mamagotchi.init.update = function() {
-  var mama = mamagotchi.objects.mama;
-  mama.customParams.innerPeace -= mama.customParams.innerPeace > 0 ? 0.001 : 0;
-  mama.customParams.fun -= mama.customParams.fun > 0 ? 0.001 : 0;
-  console.log('mama\'s inner peace:', mama.customParams.innerPeace);
-  console.log('mama\'s fun:', mama.customParams.fun);
+  mamagotchi.objects.mama.customParams.deplete();
 };
 
 /** Phaser render function. */
@@ -172,73 +222,82 @@ mamagotchi.init.render = function() {
 };
 
 /**
- * Actions available in the arsenal.
+ * Events available in the arsenal.
  * @const
- * @type {Array.<?>}
+ * @type {!Array.<{key: string, event: mamagotchi.CharacterEvent}>}
  */
-mamagotchi.characterActions.ARSENAL = [
+mamagotchi.characterEvents.ARSENAL = [
   {
     key: mamagotchi.consts.ARSENAL_COFFEE,
-    description: 'Mama gets a satisfactory dose of delicious coffee.',
-    innerPeace: 10,
-    fun: 20
+    event: /** mamagotchi.CharacterEvent */ {
+      description: 'Mama gets a satisfactory dose of delicious coffee.',
+      stats: new mamagotchi.utils.CharacterStats(10, 20)
+    }
   }, {
     key: mamagotchi.consts.ARSENAL_MASSAGE,
-    description: 'Mama gets her tired muscles worked out by a top notch' +
-         'massage therapist.',
-    innerPeace: 20,
-    fun: 5
+    event: /** mamagotchi.CharacterEvent */ {
+      description: 'Mama gets her tired muscles worked out by a top notch' +
+          'massage therapist.',
+      stats: new mamagotchi.utils.CharacterStats(20, 5)
+    }
   }, {
     key: mamagotchi.consts.ARSENAL_OFFSPRING,
-    description: 'One of mama\'s offspring comes around for a visit.',
-    innerPeace: -10,
-    fun: 25
+    event: /** mamagotchi.CharacterEvent */ {
+      description: 'One of mama\'s offspring comes around for a visit.',
+      stats: new mamagotchi.utils.CharacterStats(-10, 25)
+    }
   }, {
     key: mamagotchi.consts.ARSENAL_CULTURE,
-    description: 'Mama indulges in one of her favorite arts & culture DVDs.',
-    innerPeace: 10,
-    fun: 10
+    event: /** mamagotchi.CharacterEvent */ {
+      description: 'Mama indulges in one of her favorite arts & culture DVDs.',
+      stats: new mamagotchi.utils.CharacterStats(10, 10)
+    }
   }
 ];
 
 /**
- * Actions available in the automated action bot.
+ * Events available in the automated event bot.
  * @const
- * @type {Array.<?>}
+ * @type {!Array.<mamagotchi.CharacterEvent>}
  */
-mamagotchi.characterActions.BOT = [];
+mamagotchi.characterEvents.BOT = [];
 
 /**
- * On selecting arsenal action, causes mama's stats to change and displays
- * action description.
- * @param {?} sprite
- * @param {?} event
- * @param {string} description Description of the arsenal action.
- * @param {number} innerPeace Number to manipulate mama's inner peace stats.
- * @param {number} fun Number to manipulate mama's fun stats.
+ * On selecting arsenal event, executes associated character event.
+ * @param {?object} s Sprite that is clicked on.
+ * @param {?object} e Event details.
+ * @param {!mamagotchi.CharacterEvent} characterEvent Details of the character
+ *    event/action.
  */
-mamagotchi.events.fireArsenalAction =
-    function(sprite, event, description, innerPeace, fun) {
-  var mamaCustom = mamagotchi.objects.mama.customParams;
-  var newInnerPeace = mamaCustom.innerPeace + innerPeace;
-  var newFun = mamaCustom.fun + fun;
-  mamaCustom.innerPeace = newInnerPeace <= 100 ? newInnerPeace : 100;
-  mamaCustom.fun = newFun <= 100 ? newFun : 100;
+mamagotchi.events.executeArsenalEvent = function(s, e, characterEvent) {
+  mamagotchi.events.executeCharacterEvent(characterEvent);
+};
+
+/**
+ * "Executes" character event, causing mama's stats to change and displaying
+ * event description.
+ * @param {!mamagotchi.CharacterEvent} characterEvent Details of the character
+ *    event/action.
+ */
+mamagotchi.events.executeCharacterEvent = function(characterEvent) {
+  var mamaStats = mamagotchi.objects.mama.customParams;
+  mamaStats.modifyWith(characterEvent.stats);
   mamagotchi.objects.arsenalModal.visible = false;
-  // Pop up action description
+  console.log(characterEvent.description);
+  console.log('mama\'s stats {inner peace:', mamaStats.innerPeace + ', fun:',
+      mamaStats.fun + '}');
+  // Pop up event description
   // Pop up inner peace and fun diff
-  console.log('mama\'s inner peace AFTER:', mamaCustom.innerPeace);
-  console.log('mama\'s fun AFTER:', mamaCustom.fun);
-}
+};
 
 /**
  * 'mamagotchi' game.
  * @type {Phaser.Game}
  */
 mamagotchi.game = new Phaser.Game(1280, 720, Phaser.AUTO, 'mamagotchi', {
-    init: mamagotchi.init.init,
-    preload: mamagotchi.init.preload,
-    create: mamagotchi.init.create,
-    update: mamagotchi.init.update,
-    render: mamagotchi.init.render
+  init: mamagotchi.init.init,
+  preload: mamagotchi.init.preload,
+  create: mamagotchi.init.create,
+  update: mamagotchi.init.update,
+  render: mamagotchi.init.render
 });
