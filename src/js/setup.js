@@ -24,12 +24,21 @@ mamagotchi.consts = (function() {
   consts.IMG_PATH = 'assets/images/';
   consts.PNG = '.png';
 
+  consts.DAD = 'dad';
   consts.MAMA = 'mama';
+  consts.ROBOT = 'robot';
+
+  consts.REAR_FOREGROUND = 'rearForeground';
+
   consts.ARSENAL_BUTTON = 'arsenal-button';
   consts.ARSENAL_COFFEE = 'arsenal-coffee';
   consts.ARSENAL_CULTURE = 'arsenal-culture';
   consts.ARSENAL_MASSAGE = 'arsenal-massage';
   consts.ARSENAL_OFFSPRING = 'arsenal-offspring';
+
+  consts.ARSENAL_MODAL_TITLE_FONT = 'Arial';
+
+  consts.STARTING_STATS = 80;
 
   return consts;
 })();

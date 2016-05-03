@@ -12,32 +12,55 @@ mamagotchi.make = (function(m) {
   /**
    * The character's stats with inner peace and fun properties.
    * @param {?number} innerPeace Character's "inner peace" stats.
-   * @param {?number} fun Character's "fun" stats.
+   * @param {?number} excite Character's "excite" stats.
    * @param {?mamagotchi.make.StatusBar} innerPeaceStatusBar Associated inner
    *    peace status bar.
-   * @param {?mamagotchi.make.StatusBar} funStatusBar Associated fun status bar.
+   * @param {?mamagotchi.make.StatusBar} exciteStatusBar Associated excite
+   *    status bar.
    * @constructor
    */
   make.CharacterStatus = function(
-      innerPeace, fun, innerPeaceStatusBar, funStatusBar) {
+      innerPeace, excite, innerPeaceStatusBar, exciteStatusBar) {
     this.innerPeace = innerPeace;
-    this.fun = fun;
+    this.excite = excite;
     this.innerPeaceStatusBar = innerPeaceStatusBar ? innerPeaceStatusBar : null;
-    this.funStatusBar = funStatusBar ? funStatusBar : null;
+    this.exciteStatusBar = exciteStatusBar ? exciteStatusBar : null;
   };
 
   /**
-   * The depleting increment of the status.
+   * Character's emotional state.
+   * @typedef {number} mamagotchi.EmotionalState
+   */
+
+  /**
+   * Enum for character's emotional state based on their status attributes.
+   * @enum {mamagotchi.EmotionalState}
+   */
+  make.CharacterStatus.EmotionalState = {
+    HAPPY: 0,
+    NEUTRAL: 1,
+    UNHAPPY: 2
+  };
+
+  /**
+   * The depleting increment of the inner peace status.
    * @const
    * @type {number}
    */
-  make.CharacterStatus.DEPLETION_INCREMENT = 0.001;
+  make.CharacterStatus.INNER_PEACE_DEPLETION_INCREMENT = 0.5;
+
+  /**
+   * The depleting increment of the excite status.
+   * @const
+   * @type {number}
+   */
+  make.CharacterStatus.EXCITE_DEPLETION_INCREMENT = 0.8;
 
   /**
     * Stats properties allowed for operations.
     * @type {Array.<string>}
     */
-  make.CharacterStatus.ALLOWED_OPERATION = ['innerPeace', 'fun'];
+  make.CharacterStatus.ALLOWED_OPERATION = ['innerPeace', 'excite'];
 
   /**
    * Changes this stats by adding the given stats values.
@@ -65,10 +88,10 @@ mamagotchi.make = (function(m) {
 
   /** Incrementally depletes the stats. */
   make.CharacterStatus.prototype.deplete = function() {
-    var DEPLETION_INCREMENT = make.CharacterStatus.DEPLETION_INCREMENT;
-
-    this.innerPeace -= this.innerPeace > 0 ? DEPLETION_INCREMENT : 0;
-    this.fun -= this.fun > 0 ? DEPLETION_INCREMENT : 0;
+    this.innerPeace -= this.innerPeace > 0 ?
+        make.CharacterStatus.INNER_PEACE_DEPLETION_INCREMENT : 0;
+    this.excite -= this.excite > 0 ?
+        make.CharacterStatus.EXCITE_DEPLETION_INCREMENT : 0;
 
     this.updateStatusBars();
   };
@@ -78,16 +101,31 @@ mamagotchi.make = (function(m) {
     if (this.innerPeaceStatusBar) {
       this.innerPeaceStatusBar.setPercent(this.innerPeace);
     }
-    if (this.funStatusBar) {
-      this.funStatusBar.setPercent(this.fun);
+    if (this.exciteStatusBar) {
+      this.exciteStatusBar.setPercent(this.excite);
     }
   };
 
   /**
+   * Based on the character's status attributes, gets their emotional state.
+   * @return {mamagotchi.EmotionalState}
+   */
+  make.CharacterStatus.prototype.getEmotionalStatus = function() {
+    if (this.innerPeace > 66 && this.excite > 66) {
+      return make.CharacterStatus.EmotionalState.HAPPY;
+    } else if (this.innerPeace > 33 && this.excite > 33) {
+      return make.CharacterStatus.EmotionalState.NEUTRAL;
+    } else {
+      return make.CharacterStatus.EmotionalState.UNHAPPY;
+    }
+  }
+
+  /**
    * Status bar.
+   * @param {?number} starting_stats The default value of the stats.
    * @constructor
    */
-  make.StatusBar = function() {
+  make.StatusBar = function(starting_stats) {
     var game = m.game;
 
     /**
@@ -115,12 +153,14 @@ mamagotchi.make = (function(m) {
     barBitmap.ctx.rect(0, 0, WIDTH, HEIGHT);
     barBitmap.ctx.fill();
 
+    var stating_stats = (starting_stats || 100) / 100;
     /**
      * The bar sprite.
      * @type {Phaser.Sprite}
      */
     this.barSprite = game.add.sprite(0 - background.width / 2, 0, barBitmap);
     this.barSprite.anchor.y = 0.5;
+    this.barSprite.width = stating_stats * make.StatusBar.WIDTH;
     this.bar.add(this.barSprite);
   };
 
