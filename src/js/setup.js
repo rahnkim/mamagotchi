@@ -27,7 +27,10 @@ mamagotchi.consts = (function() {
   consts.DAD = 'dad';
   consts.MAMA = 'mama';
   consts.ROBOT = 'robot';
+  consts.CHIBI_TOTORO = 'chibiTotoro';
+  consts.MEDIUM_TOTORO = 'mediumTotoro';
 
+  consts.FRONT_FOREGROUND = 'frontForeground';
   consts.REAR_FOREGROUND = 'rearForeground';
 
   consts.ARSENAL_BUTTON = 'arsenal-button';

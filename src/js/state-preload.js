@@ -27,7 +27,7 @@ mamagotchi.state.preload = (function(m) {
       var consts = m.consts;
 
       this.load.image(
-        'background', consts.IMG_PATH + 'background-placeholders.jpg');
+        'background', consts.IMG_PATH + 'background-placeholders-1.jpg');
       this.load.spritesheet(consts.DAD,
         consts.IMG_PATH + 'spritesheet-dad-180x320x2.png', 180, 320);
       this.load.spritesheet(consts.MAMA,
@@ -36,6 +36,12 @@ mamagotchi.state.preload = (function(m) {
         consts.IMG_PATH + 'spritesheet-robot-290x590x2.png', 290, 590);
       this.load.image(
         consts.REAR_FOREGROUND, consts.IMG_PATH + 'foreground-rear.png');
+      this.load.spritesheet(consts.MEDIUM_TOTORO,
+        consts.IMG_PATH + 'spritesheet-totoro-medium-140x170x2.png', 140, 170);
+      this.load.spritesheet(consts.CHIBI_TOTORO,
+        consts.IMG_PATH + 'spritesheet-totoro-chibi-60x90x2.png', 60, 90);
+      this.load.image(
+        consts.FRONT_FOREGROUND, consts.IMG_PATH + 'foreground-front.png');
 
       this.load.image(consts.ARSENAL_BUTTON,
           consts.IMG_PATH + consts.ARSENAL_BUTTON + consts.PNG);

@@ -16,9 +16,6 @@ mamagotchi.state.game = (function(m) {
   var gameState = {
     /** Phaser create function. */
     create: function() {
-      this.world.setBounds(0, 0, 1100, 720);
-      this.physics.startSystem(Phaser.Physics.ARCADE);
-
       objects.background = this.add.image(0, 0, 'background');
       objects.background.scale.setTo(0.5);
 
@@ -27,39 +24,76 @@ mamagotchi.state.game = (function(m) {
       objects.dad.scale.setTo(0.5);
       objects.dad.anchor.setTo(0.5);
 
-      // Robot sprite
+      // Robot sprite.
       objects.robot = this.add.sprite(215, 312, m.consts.ROBOT);
       objects.robot.scale.setTo(0.5);
       objects.robot.anchor.setTo(0.5);
 
-      // Rear foreground
+      // Rear foreground.
       objects.rearForeground = this.add.image(0, 0, m.consts.REAR_FOREGROUND);
       objects.rearForeground.scale.setTo(0.5);
 
-      // Medium Totoro sprite
+      // Medium Totoro sprite.
+      objects.mediumTotoro =
+          this.add.sprite(1129, 563, m.consts.MEDIUM_TOTORO);
+      objects.mediumTotoro.anchor.setTo(0.5, 0.95); // Anchor at feet.
 
-      // Chibi Totoro sprite
+      // Medium Totoro blink animation.
+      objects.mediumTotoro.animations.add(
+        'blink', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 4, true);
+      objects.mediumTotoro.play('blink');
 
-      // Front foreground
+      // Medium Totoro resting motion.
+      objects.mediumTotoro.scale.setTo(0.52, 0.48);
+      objects.mediumTotoro.angle = -2;
+      this.add.tween(objects.mediumTotoro).to(
+          {angle:2}, 1500, "Quad.easeInOut", true, 0, -1, true);
+      this.add.tween(objects.mediumTotoro.scale).to(
+          {x: 0.5, y: 0.5}, 750, "Quad.easeInOut", true, 0, -1, true);
+
+      // Chibi Totoro sprite.
+      objects.chibiTotoro = this.add.sprite(1080, 562, m.consts.CHIBI_TOTORO);
+      objects.chibiTotoro.anchor.setTo(0.5, 0.95); // Anchor at feet.
+
+      // Chibi Totoro blink animation.
+      objects.chibiTotoro.animations.add(
+        'blink', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 5, true);
+      objects.chibiTotoro.play('blink');
+
+      // Chibi Totoro resting motion.
+      objects.chibiTotoro.scale.setTo(0.55, 0.45);
+      objects.chibiTotoro.angle = -3;
+      this.add.tween(objects.chibiTotoro).to(
+          {angle:3}, 1500, "Quad.easeInOut", true, 0, -1, true);
+      this.add.tween(objects.chibiTotoro.scale).to(
+          {x: 0.5, y: 0.5}, 750, "Quad.easeInOut", true, 0, -1, true);
+
+      // Front foreground.
+      objects.frontForeground =
+          this.add.image(0, 0, m.consts.FRONT_FOREGROUND);
+      objects.frontForeground.scale.setTo(0.5);
 
       // Mama sprite general settings.
       objects.mama = this.add.sprite(
-          this.world.centerX + 70, this.world.centerY + 83, m.consts.MAMA);
+          this.world.centerX, this.world.centerY + 223, m.consts.MAMA);
       objects.mama.scale.setTo(0.5);
-      objects.mama.anchor.setTo(0.5);
+      objects.mama.anchor.setTo(0.5, 1); // Anchor at feet.
       objects.mama.customParams = {};
 
-      // Mama sprite animations.
+      // Mama blink animations.
       objects.mama.animations.add(
-        'happyBlink', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 2, true);
+        'happyBlink', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 3, true);
       objects.mama.animations.add(
-        'neutralBlink', [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3], 2, true);
+        'neutralBlink', [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3], 3, true);
       objects.mama.animations.add(
-        'unhappyBlink', [4, 4, 4, 4, 4, 4, 4, 4, 4, 5], 2, true);
+        'unhappyBlink', [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5], 3, true);
       objects.mama.play('happyBlink');
 
-      this.physics.arcade.enable(objects.mama);
-      objects.mama.body.collideWorldBounds = true;
+      // Mama resting motion.
+      objects.mama.scale.setTo(0.50125, 0.49875);
+      objects.mama.angle = -0.125;
+      this.add.tween(objects.mama).to({angle:0.125}, 1400, "Quad.easeInOut", true, 0, -1, true);
+      this.add.tween(objects.mama.scale).to({x: 0.5, y: 0.5}, 700, "Quad.easeInOut", true, 0, -1, true);
 
       // Mama input handler settings.
       objects.mama.inputEnabled = true;
@@ -72,6 +106,8 @@ mamagotchi.state.game = (function(m) {
       objects.mama.events.onDragStart.add(function() {
         objects.mama.animations.stop();
       })
+
+      // Add directional warp to mama sprite.
       objects.mama.events.onDragUpdate.add(function(sprite) {
         var diff = sprite.x - objects.mama.customParams.lastX;
         if (diff < -5) {
@@ -83,12 +119,23 @@ mamagotchi.state.game = (function(m) {
         }
         objects.mama.customParams.lastX = sprite.x;
       }, this);
+
+      // Limit mama's drag movement to left and right bounds.
       objects.mama.events.onDragStop.add(function(sprite) {
         objects.mama.frame = 2;
-        objects.mama.customParams.lastX = sprite.x;
+
+        var RIGHT_BOUND = 1010;
+        var LEFT_BOUND = 100;
+        if (sprite.x > RIGHT_BOUND) {
+          objects.mama.customParams.lastX = sprite.x = RIGHT_BOUND;
+        } else if (sprite.x < LEFT_BOUND) {
+          objects.mama.customParams.lastX = sprite.x = LEFT_BOUND;
+        } else {
+          objects.mama.customParams.lastX = sprite.x;
+        }
       }, this, 0);
 
-      // Status bars
+      // Status bars.
       var barLabelStyle = {
         font: '40px ' + m.consts.ARSENAL_MODAL_TITLE_FONT,
         fill: 'black'
@@ -130,6 +177,7 @@ mamagotchi.state.game = (function(m) {
     }
   };
 
+  /** Gets mama's emotional status and sets appropriate blink animation. */
   function setMamaIdleAnimation() {
     if (objects.mama.customParams.Status.getEmotionalStatus() ===
           m.make.CharacterStatus.EmotionalState.HAPPY) {
