@@ -33,6 +33,11 @@ mamagotchi.consts = (function() {
   consts.FRONT_FOREGROUND = 'frontForeground';
   consts.REAR_FOREGROUND = 'rearForeground';
 
+  consts.PEACE_BAR_EMPTY = 'peaceBar_empty';
+  consts.PEACE_BAR_FULL = 'peaceBar_full';
+  consts.EXCITE_BAR_EMPTY = 'exciteBar_empty';
+  consts.EXCITE_BAR_FULL = 'exciteBar_full';
+
   consts.ARSENAL_BUTTON = 'arsenal-button';
   consts.ARSENAL_COFFEE = 'arsenal-coffee';
   consts.ARSENAL_CULTURE = 'arsenal-culture';

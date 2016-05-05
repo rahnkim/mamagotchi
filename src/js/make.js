@@ -122,10 +122,12 @@ mamagotchi.make = (function(m) {
 
   /**
    * Status bar.
-   * @param {?number} starting_stats The default value of the stats.
+   * @param {string} emotyImageKey Key for image representing empty bar.
+   * @param {string} fullImageKey Key for image representing full bar.
+   * @param {?number} opt_startingStats The default value of the stats.
    * @constructor
    */
-  make.StatusBar = function(starting_stats) {
+  make.StatusBar = function(emptyImageKey, fullImageKey, opt_startingStats) {
     var game = m.game;
 
     /**
@@ -134,70 +136,34 @@ mamagotchi.make = (function(m) {
      */
     this.bar = game.add.group();
 
-    var WIDTH = make.StatusBar.WIDTH;
-    var HEIGHT = make.StatusBar.HEIGHT;
+    var emptyBar = game.add.sprite(0, 0, emptyImageKey);
+    var barWidth = emptyBar.width;
+    var barHeight = emptyBar.height;
+    emptyBar.scale.setTo(0.5);
+    this.bar.add(emptyBar);
 
-    var bgBitmap = game.add.bitmapData(WIDTH, HEIGHT);
-    bgBitmap.ctx.fillStyle = make.StatusBar.BACKGROUND_COLOR;
-    bgBitmap.ctx.beginPath();
-    bgBitmap.ctx.rect(0, 0, WIDTH, HEIGHT);
-    bgBitmap.ctx.fill();
+    var bmd = game.add.bitmapData(barWidth, barHeight);
+    bmd.ctx.beginPath();
+    bmd.ctx.rect(0, 0, barWidth, barHeight);
 
-    var background = game.add.sprite(0, 0, bgBitmap);
-    background.anchor.set(0.5);
-    this.bar.add(background);
+    /**
+     * Crop rectangle for the bar.
+     * @type {Phaser.Rectangle}
+     */
+    this.cropRectangle = game.add.sprite(0, 0, bmd);
+    this.bar.add(this.cropRectangle);
 
-    var barBitmap = game.add.bitmapData(WIDTH, HEIGHT);
-    barBitmap.ctx.fillStyle = make.StatusBar.BAR_COLOR;
-    barBitmap.ctx.beginPath();
-    barBitmap.ctx.rect(0, 0, WIDTH, HEIGHT);
-    barBitmap.ctx.fill();
+    this.cropRectangle.scale.x = (opt_startingStats || 100) / 100;
 
-    var stating_stats = (starting_stats || 100) / 100;
     /**
      * The bar sprite.
      * @type {Phaser.Sprite}
      */
-    this.barSprite = game.add.sprite(0 - background.width / 2, 0, barBitmap);
-    this.barSprite.anchor.y = 0.5;
-    this.barSprite.width = stating_stats * make.StatusBar.WIDTH;
+    this.barSprite = game.add.sprite(0, 0, fullImageKey);
+    this.barSprite.scale.setTo(0.5);
+    this.barSprite.crop(this.cropRectangle);
     this.bar.add(this.barSprite);
   };
-
-  /**
-   * Status bar width.
-   * @const
-   * @type {number}
-   */
-  make.StatusBar.WIDTH = 400;
-
-  /**
-   * Status bar height.
-   * @const
-   * @type {number}
-   */
-  make.StatusBar.HEIGHT = 50;
-
-  /**
-   * Background hex code.
-   * @const
-   * @type {string}
-   */
-  make.StatusBar.BACKGROUND_COLOR = 'blue';
-
-  /**
-   * Background hex code.
-   * @const
-   * @type {string}
-   */
-  make.StatusBar.BAR_COLOR = 'red';
-
-  /**
-   * Status change animation duration.
-   * @const
-   * @type {number}
-   */
-  make.StatusBar.ANIMATION_DURATION = 200;
 
   /**
    * Sets the status bar filled state.
@@ -210,10 +176,8 @@ mamagotchi.make = (function(m) {
     if (percentValue > 100) {
       percentValue = 100;
     }
-    var newWidth = (percentValue * make.StatusBar.WIDTH) / 100;
-    m.game.add.tween(this.barSprite).to(
-      {width: newWidth}, make.StatusBar.ANIMATION_DURATION,
-      Phaser.Easing.Linear.None, true);
+    this.cropRectangle.scale.x = percentValue / 100;
+    this.barSprite.updateCrop();
   };
 
   /**

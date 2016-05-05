@@ -42,6 +42,14 @@ mamagotchi.state.preload = (function(m) {
         consts.IMG_PATH + 'spritesheet-totoro-chibi-60x90x2.png', 60, 90);
       this.load.image(
         consts.FRONT_FOREGROUND, consts.IMG_PATH + 'foreground-front.png');
+      this.load.image(
+        consts.PEACE_BAR_EMPTY, consts.IMG_PATH + 'bar-inner-peace-empty.png');
+      this.load.image(
+        consts.PEACE_BAR_FULL, consts.IMG_PATH + 'bar-inner-peace-full.png');
+      this.load.image(
+        consts.EXCITE_BAR_EMPTY, consts.IMG_PATH + 'bar-excite-empty.png');
+      this.load.image(
+        consts.EXCITE_BAR_FULL, consts.IMG_PATH + 'bar-excite-full.png');
 
       this.load.image(consts.ARSENAL_BUTTON,
           consts.IMG_PATH + consts.ARSENAL_BUTTON + consts.PNG);

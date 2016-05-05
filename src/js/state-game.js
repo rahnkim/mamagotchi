@@ -23,6 +23,9 @@ mamagotchi.state.game = (function(m) {
       objects.dad = this.add.sprite(1112, 217, m.consts.DAD);
       objects.dad.scale.setTo(0.5);
       objects.dad.anchor.setTo(0.5);
+      objects.dad.animations.add(
+        'blink', createBlinkAnimationArray(0, 1, 28), 5, true);
+      objects.dad.play('blink');
 
       // Robot sprite.
       objects.robot = this.add.sprite(215, 312, m.consts.ROBOT);
@@ -35,38 +38,38 @@ mamagotchi.state.game = (function(m) {
 
       // Medium Totoro sprite.
       objects.mediumTotoro =
-          this.add.sprite(1129, 563, m.consts.MEDIUM_TOTORO);
+          this.add.sprite(1109, 563, m.consts.MEDIUM_TOTORO);
       objects.mediumTotoro.anchor.setTo(0.5, 0.95); // Anchor at feet.
 
       // Medium Totoro blink animation.
       objects.mediumTotoro.animations.add(
-        'blink', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 4, true);
+        'blink', createBlinkAnimationArray(0, 1, 12), 4, true);
       objects.mediumTotoro.play('blink');
 
       // Medium Totoro resting motion.
       objects.mediumTotoro.scale.setTo(0.52, 0.48);
-      objects.mediumTotoro.angle = -2;
+      objects.mediumTotoro.angle = -3;
       this.add.tween(objects.mediumTotoro).to(
-          {angle:2}, 1500, "Quad.easeInOut", true, 0, -1, true);
+          {angle: 1}, 1100, "Quad.easeInOut", true, 0, -1, true);
       this.add.tween(objects.mediumTotoro.scale).to(
-          {x: 0.5, y: 0.5}, 750, "Quad.easeInOut", true, 0, -1, true);
+          {x: 0.5, y: 0.5}, 550, "Quad.easeInOut", true, 0, -1, true);
 
       // Chibi Totoro sprite.
-      objects.chibiTotoro = this.add.sprite(1080, 562, m.consts.CHIBI_TOTORO);
+      objects.chibiTotoro = this.add.sprite(1070, 562, m.consts.CHIBI_TOTORO);
       objects.chibiTotoro.anchor.setTo(0.5, 0.95); // Anchor at feet.
 
       // Chibi Totoro blink animation.
       objects.chibiTotoro.animations.add(
-        'blink', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 5, true);
+        'blink', createBlinkAnimationArray(0, 1, 12), 5, true);
       objects.chibiTotoro.play('blink');
 
       // Chibi Totoro resting motion.
       objects.chibiTotoro.scale.setTo(0.55, 0.45);
       objects.chibiTotoro.angle = -3;
       this.add.tween(objects.chibiTotoro).to(
-          {angle:3}, 1500, "Quad.easeInOut", true, 0, -1, true);
+          {angle: 3}, 1100, "Quad.easeInOut", true, 0, -1, true);
       this.add.tween(objects.chibiTotoro.scale).to(
-          {x: 0.5, y: 0.5}, 750, "Quad.easeInOut", true, 0, -1, true);
+          {x: 0.5, y: 0.5}, 550, "Quad.easeInOut", true, 0, -1, true);
 
       // Front foreground.
       objects.frontForeground =
@@ -82,18 +85,20 @@ mamagotchi.state.game = (function(m) {
 
       // Mama blink animations.
       objects.mama.animations.add(
-        'happyBlink', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 3, true);
+        'happyBlink', createBlinkAnimationArray(0, 1), 5, true);
       objects.mama.animations.add(
-        'neutralBlink', [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3], 3, true);
+        'neutralBlink', createBlinkAnimationArray(2, 3), 5, true);
       objects.mama.animations.add(
-        'unhappyBlink', [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5], 3, true);
+        'unhappyBlink', createBlinkAnimationArray(4, 5), 5, true);
       objects.mama.play('happyBlink');
 
       // Mama resting motion.
       objects.mama.scale.setTo(0.50125, 0.49875);
       objects.mama.angle = -0.125;
-      this.add.tween(objects.mama).to({angle:0.125}, 1400, "Quad.easeInOut", true, 0, -1, true);
-      this.add.tween(objects.mama.scale).to({x: 0.5, y: 0.5}, 700, "Quad.easeInOut", true, 0, -1, true);
+      this.add.tween(objects.mama).to(
+          {angle: 0.125}, 1400, "Quad.easeInOut", true, 0, -1, true);
+      this.add.tween(objects.mama.scale).to(
+          {x: 0.5, y: 0.5}, 700, "Quad.easeInOut", true, 0, -1, true);
 
       // Mama input handler settings.
       objects.mama.inputEnabled = true;
@@ -124,7 +129,7 @@ mamagotchi.state.game = (function(m) {
       objects.mama.events.onDragStop.add(function(sprite) {
         objects.mama.frame = 2;
 
-        var RIGHT_BOUND = 1010;
+        var RIGHT_BOUND = 1000;
         var LEFT_BOUND = 100;
         if (sprite.x > RIGHT_BOUND) {
           objects.mama.customParams.lastX = sprite.x = RIGHT_BOUND;
@@ -136,18 +141,18 @@ mamagotchi.state.game = (function(m) {
       }, this, 0);
 
       // Status bars.
-      var barLabelStyle = {
-        font: '40px ' + m.consts.ARSENAL_MODAL_TITLE_FONT,
-        fill: 'black'
-      };
-      objects.innerPeaceStatusBar = new m.make.StatusBar(m.consts.STARTING_STATS);
-      objects.innerPeaceStatusBar.setPosition(475, 50);
-      var innerPeaceLabel = this.add.text(30, 50, 'Inner Peace:', barLabelStyle);
-      innerPeaceLabel.anchor.setTo(0, 0.5);
-      objects.exciteStatusBar = new m.make.StatusBar(m.consts.STARTING_STATS);
-      objects.exciteStatusBar.setPosition(475, 125);
-      var exciteLabel = this.add.text(30, 125, 'Excite:', barLabelStyle);
-      exciteLabel.anchor.setTo(0, 0.5);
+      var barsLeftMargin = 183;
+      var barsTopMargin = 32;
+      var barsGap = 45;
+      objects.innerPeaceStatusBar = new m.make.StatusBar(
+        m.consts.PEACE_BAR_EMPTY, m.consts.PEACE_BAR_FULL,
+        m.consts.STARTING_STATS);
+      objects.innerPeaceStatusBar.setPosition(barsLeftMargin, barsTopMargin);
+      objects.exciteStatusBar = new m.make.StatusBar(
+        m.consts.EXCITE_BAR_EMPTY, m.consts.EXCITE_BAR_FULL,
+        m.consts.STARTING_STATS);
+      objects.exciteStatusBar.setPosition(
+          barsLeftMargin, barsTopMargin + barsGap);
 
       // Mama status.
       objects.mama.customParams.Status = new m.make.CharacterStatus(
@@ -176,6 +181,27 @@ mamagotchi.state.game = (function(m) {
       setMamaIdleAnimation();
     }
   };
+
+  /**
+   * Given rest frame order and blink frame order, creates and returns an array
+   * that represents a blink for 5fps animation.
+   * @param {number} restFrame Rest frame order.
+   * @param {number} blinkFrame Blink frame order.
+   * @param {number} opt_restFrameCount Number of frames to rest for.
+   * @return {Array.<number>} Array to use for animation.
+   */
+  function createBlinkAnimationArray(
+      restFrame, blinkFrame, opt_restFrameCount) {
+    var restFrames = opt_restFrameCount ? opt_restFrameCount : 25;
+    var array = [];
+    for (var i = 0; i < restFrames; ++i) {
+      array.push(restFrame);
+    }
+
+    // Insert the blink frame at a random index.
+    array.splice(Math.floor((Math.random() * array.length)), 0, blinkFrame);
+    return array;
+  }
 
   /** Gets mama's emotional status and sets appropriate blink animation. */
   function setMamaIdleAnimation() {
